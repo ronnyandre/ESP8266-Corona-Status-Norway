@@ -25,3 +25,5 @@ Siden du har litt tid til overs om dagen, og skulle du tilfeldigvis ha en ESP826
 1. Scrolling fungerer ikke.
 
 _PS: Dette er fsørste gang jeg bruker OLED, og koden er veldig WIP, men bidra gjerne._
+
+_PPS: Scriptet henter JSON-data fra VG.no sin statusside. All data tilhører VG, og bruk med omhu._
