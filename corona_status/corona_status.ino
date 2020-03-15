@@ -23,11 +23,18 @@ const char* pass = WIFI_PASS;
 const uint8_t fingerprint[20] = {0x33, 0x1F, 0xC6, 0xD5, 0x2C, 0x05, 0xC8, 0x23, 0x6D, 0xEF, 0xBB, 0xF4, 0x81, 0x63, 0x2D, 0x16, 0x8A, 0x15, 0xEF, 0x6D};
 
 // Intervals
-#define INTERVAL_WIFI_WAIT 3000;
-#define INTERVAL_STATS_UPDATE 300000;
+#define INTERVAL_WIFI_WAIT 3000
+#define INTERVAL_STATS_UPDATE 300000
 
 // Timers
 unsigned long timer_stats_update = 0;
+
+void print_time(unsigned long time_millis);
+
+String scrolling_text;
+void scroll_text(String text);
+int x;
+int minX;
 
 void setup() {
   OLED.begin();
@@ -75,9 +82,23 @@ void setup() {
   OLED.display();
 
   delay(INTERVAL_WIFI_WAIT);
+
+  // Update stats
+  update_stats();
 }
 
 void loop() {
+  if (millis() >= timer_stats_update + INTERVAL_STATS_UPDATE) {
+    timer_stats_update += INTERVAL_STATS_UPDATE;
+    update_stats();
+  }
+  
+  scroll_text(scrolling_text);
+  
+  OLED.display();
+}
+
+void update_stats() {
   std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
 
   client->setFingerprint(fingerprint);
@@ -122,10 +143,7 @@ void loop() {
           OLED.clearDisplay();
 
           JsonArray cases = doc["cases"];
-          String scrollingString;
-          String scrollSpace = "      ";
-
-          // scrollingString += scrollSpace;
+          String scroll_space = "      ";
           
           for (byte i = 0; i < sizeof(cases) - 1; i++) {
             int confirmedCases = cases[i]["confirmed"];
@@ -135,32 +153,30 @@ void loop() {
             Serial.print(": ");
             Serial.println(confirmedCases);
 
-            scrollingString += county;
-            scrollingString += ": ";
-            scrollingString += confirmedCases;
-            scrollingString += scrollSpace;
+            scrolling_text += county;
+            scrolling_text += ": ";
+            scrolling_text += confirmedCases;
+            scrolling_text += scroll_space;
           }
 
           OLED.setTextSize(1);
           OLED.setCursor(0, 0);
-          OLED.print(scrollingString);
-          OLED.setTextColor(WHITE);
-          // OLED.startscrollleft(0x00, 0x06);
-
-          OLED.setTextWrap(false);
-          OLED.setTextSize(1);
-          OLED.setCursor(0, 8);
-          OLED.println("Inf. / Rec. / Dead:");
+          OLED.print("Infected:");
           
           OLED.setTextSize(2);
-          OLED.setCursor(0, 16);
+          OLED.setCursor(0, 8);
           OLED.print(confirmed);
-          OLED.print("/");
+
+          OLED.setTextSize(1);
+          OLED.setCursor(94, 8);
+          OLED.print("Rec: ");
+          OLED.setCursor(120, 8);
           OLED.print(recovered);
-          OLED.print("/");
+
+          OLED.setCursor(88, 16);
+          OLED.print("Dead: ");
+          OLED.setCursor(120, 16);
           OLED.print(dead);
-          
-          OLED.display();
         }
       }
     } else {
@@ -173,10 +189,22 @@ void loop() {
   }
 
   Serial.println("Wait 5m before next fetch...");
-  delay(INTERVAL_STATS_UPDATE);
 }
 
-void print_time(unsigned long time_millis) {
+void scroll_text(String text) {
+  x = OLED.width();
+  minX = -6 * text.length();
+  
+  OLED.setCursor(x, 0);
+  OLED.print(text);
+  
+  x = x-4;
+  if (x < minX) x = OLED.width();
+
+  Serial.println("Scrolling");
+}
+
+void print_time(unsigned long time_millis) {
   Serial.print("Time: ");
   Serial.print(time_millis / 1000);
   Serial.print("s - ");
