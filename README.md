@@ -19,11 +19,4 @@ Vis status på antall smittede, friske og døde etter Covid-19 i Norge. Henter d
    
 3. Kjør!
 
-
-## Kjente feil
-
-1. Scrolling fungerer ikke.4
-
-_PS: Dette er fsørste gang jeg bruker OLED, og koden er veldig WIP, men bidra gjerne._
-
-_PPS: Scriptet henter JSON-data fra VG.no sin statusside. All data tilhører VG, så bruk med omhu._
+_PS: Scriptet henter JSON-data fra VG.no sin statusside. All data tilhører VG._
