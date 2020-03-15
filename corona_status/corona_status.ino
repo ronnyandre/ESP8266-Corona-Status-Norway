@@ -93,7 +93,7 @@ void loop() {
     update_stats();
   }
   
-  scroll_text(scrolling_text);
+  // scroll_text(scrolling_text);
   
   OLED.display();
 }
