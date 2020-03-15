@@ -29,10 +29,12 @@ const uint8_t fingerprint[20] = {0x33, 0x1F, 0xC6, 0xD5, 0x2C, 0x05, 0xC8, 0x23,
 // Timers
 unsigned long timer_stats_update = 0;
 
-void print_time(unsigned long time_millis);
+// Variables
+String scrolling_text = "";
+int confirmed = 0;
+int recovered = 0;
+int dead = 0;
 
-String scrolling_text;
-void scroll_text(String text);
 int x;
 int minX;
 
@@ -83,22 +85,32 @@ void setup() {
 
   delay(INTERVAL_WIFI_WAIT);
 
-  // Update stats
-  update_stats();
+  // Fetch data
+  fetch_data();
+  
+  // Show stats
+  show_stats();
+
+  x = OLED.width();
+  minX = -6 * scrolling_text.length();
 }
 
 void loop() {
+  OLED.clearDisplay();
+  
   if (millis() >= timer_stats_update + INTERVAL_STATS_UPDATE) {
     timer_stats_update += INTERVAL_STATS_UPDATE;
-    update_stats();
+    fetch_data();
   }
+
+  show_stats();
   
-  // scroll_text(scrolling_text);
-  
+  scroll_text();
+
   OLED.display();
 }
 
-void update_stats() {
+void fetch_data() {
   std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
 
   client->setFingerprint(fingerprint);
@@ -132,15 +144,12 @@ void update_stats() {
           Serial.println(error.c_str());
           return;
         } else {
-          int confirmed = doc["totals"]["confirmed"];
-          int dead = doc["totals"]["dead"];
-          int recovered = doc["totals"]["recovered"];
+          confirmed = doc["totals"]["confirmed"];
+          recovered = doc["totals"]["recovered"];
+          dead = doc["totals"]["dead"];
           
           Serial.print("Confirmed infected in Norway: ");
           Serial.println(confirmed);
-
-          OLED.begin();
-          OLED.clearDisplay();
 
           JsonArray cases = doc["cases"];
           String scroll_space = "      ";
@@ -158,25 +167,6 @@ void update_stats() {
             scrolling_text += confirmedCases;
             scrolling_text += scroll_space;
           }
-
-          OLED.setTextSize(1);
-          OLED.setCursor(0, 0);
-          OLED.print("Infected:");
-          
-          OLED.setTextSize(2);
-          OLED.setCursor(0, 8);
-          OLED.print(confirmed);
-
-          OLED.setTextSize(1);
-          OLED.setCursor(94, 8);
-          OLED.print("Rec: ");
-          OLED.setCursor(120, 8);
-          OLED.print(recovered);
-
-          OLED.setCursor(88, 16);
-          OLED.print("Dead: ");
-          OLED.setCursor(120, 16);
-          OLED.print(dead);
         }
       }
     } else {
@@ -191,21 +181,31 @@ void update_stats() {
   Serial.println("Wait 5m before next fetch...");
 }
 
-void scroll_text(String text) {
-  x = OLED.width();
-  minX = -6 * text.length();
+void show_stats() {
+  OLED.setTextSize(1);
+  OLED.setCursor(0, 0);
+  OLED.print("Infected:");
   
-  OLED.setCursor(x, 0);
-  OLED.print(text);
+  OLED.setTextSize(2);
+  OLED.setCursor(0, 8);
+  OLED.print(confirmed);
+
+  OLED.setTextSize(1);
+  OLED.setCursor(94, 8);
+  OLED.print("Rec: ");
+  OLED.setCursor(120, 8);
+  OLED.print(recovered);
+
+  OLED.setCursor(88, 16);
+  OLED.print("Dead: ");
+  OLED.setCursor(120, 16);
+  OLED.print(dead);
+}
+
+void scroll_text() {
+  OLED.setCursor(x, 24);
+  OLED.print(scrolling_text);
   
   x = x-4;
   if (x < minX) x = OLED.width();
-
-  Serial.println("Scrolling");
-}
-
-void print_time(unsigned long time_millis) {
-  Serial.print("Time: ");
-  Serial.print(time_millis / 1000);
-  Serial.print("s - ");
 }
