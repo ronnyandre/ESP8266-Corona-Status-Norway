@@ -46,7 +46,7 @@ void setup() {
   OLED.setTextSize(1);
   OLED.setTextColor(WHITE);
   OLED.setCursor(0, 0);
-  OLED.println("Kobler til wifi:");
+  OLED.println("Connecting to WiFi...");
   OLED.print(ssid);
   
   OLED.display();
@@ -77,7 +77,7 @@ void setup() {
   OLED.setTextSize(1);
   OLED.setTextColor(WHITE);
   OLED.setCursor(0, 0);
-  OLED.println("Koblet til wifi!");
+  OLED.println("Connected to WiFi!");
   OLED.print("IP: ");
   OLED.println(WiFi.localIP());
 
@@ -183,27 +183,27 @@ void fetch_data() {
 
 void show_stats() {
   OLED.setTextSize(1);
-  OLED.setCursor(0, 0);
+  OLED.setCursor(0, 8);
   OLED.print("Infected:");
   
   OLED.setTextSize(2);
-  OLED.setCursor(0, 8);
+  OLED.setCursor(0, 16);
   OLED.print(confirmed);
 
   OLED.setTextSize(1);
-  OLED.setCursor(94, 8);
+  OLED.setCursor(94, 16);
   OLED.print("Rec: ");
-  OLED.setCursor(120, 8);
+  OLED.setCursor(120, 16);
   OLED.print(recovered);
 
-  OLED.setCursor(88, 16);
+  OLED.setCursor(88, 24);
   OLED.print("Dead: ");
-  OLED.setCursor(120, 16);
+  OLED.setCursor(120, 24);
   OLED.print(dead);
 }
 
 void scroll_text() {
-  OLED.setCursor(x, 24);
+  OLED.setCursor(x, 0);
   OLED.print(scrolling_text);
   
   x = x-4;
