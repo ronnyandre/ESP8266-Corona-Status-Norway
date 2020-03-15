@@ -1,5 +1,6 @@
 #include "config.h"
 
+// Add support for unicode in JSON
 #define ARDUINOJSON_DECODE_UNICODE 1
 #include <ArduinoJson.h>
 
@@ -7,15 +8,26 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecureBearSSL.h>
 
-const char* ssid = WIFI_SSID;
-const char* pass = WIFI_PASS;
-const uint8_t fingerprint[20] = {0x33, 0x1F, 0xC6, 0xD5, 0x2C, 0x05, 0xC8, 0x23, 0x6D, 0xEF, 0xBB, 0xF4, 0x81, 0x63, 0x2D, 0x16, 0x8A, 0x15, 0xEF, 0x6D};
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
 #define OLED_RESET 0
 Adafruit_SSD1306 OLED(OLED_RESET);
+
+// Wifi Settings (edit config.h)
+const char* ssid = WIFI_SSID;
+const char* pass = WIFI_PASS;
+
+// SSL Certificate Fingerprint for the URL we are fetching
+// https://knowledge.digicert.com/solution/SO9840.html
+const uint8_t fingerprint[20] = {0x33, 0x1F, 0xC6, 0xD5, 0x2C, 0x05, 0xC8, 0x23, 0x6D, 0xEF, 0xBB, 0xF4, 0x81, 0x63, 0x2D, 0x16, 0x8A, 0x15, 0xEF, 0x6D};
+
+// Intervals
+#define INTERVAL_WIFI_WAIT 3000;
+#define INTERVAL_STATS_UPDATE 300000;
+
+// Timers
+unsigned long timer_stats_update = 0;
 
 void setup() {
   OLED.begin();
@@ -62,7 +74,7 @@ void setup() {
 
   OLED.display();
 
-  delay(3000);
+  delay(INTERVAL_WIFI_WAIT);
 }
 
 void loop() {
@@ -161,5 +173,11 @@ void loop() {
   }
 
   Serial.println("Wait 5m before next fetch...");
-  delay(300000);
+  delay(INTERVAL_STATS_UPDATE);
+}
+
+void print_time(unsigned long time_millis) {
+  Serial.print("Time: ");
+  Serial.print(time_millis / 1000);
+  Serial.print("s - ");
 }
