@@ -1,3 +1,5 @@
+#include "config.h"
+
 #define ARDUINOJSON_DECODE_UNICODE 1
 #include <ArduinoJson.h>
 
@@ -5,8 +7,8 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecureBearSSL.h>
 
-const char* ssid = "[REDACTED]";
-const char* pass = "[REDACTED]";
+const char* ssid = WIFI_SSID;
+const char* pass = WIFI_PASS;
 const uint8_t fingerprint[20] = {0x33, 0x1F, 0xC6, 0xD5, 0x2C, 0x05, 0xC8, 0x23, 0x6D, 0xEF, 0xBB, 0xF4, 0x81, 0x63, 0x2D, 0x16, 0x8A, 0x15, 0xEF, 0x6D};
 
 #include <Adafruit_GFX.h>
