@@ -2,6 +2,8 @@
 
 Vis status på antall smittede, friske og døde etter Covid-19 i Norge. Henter data fra VG.no.
 
+![Bilde av hvordan koden vises på en SSD1306 OLED-skjerm](https://i.imgur.com/SZmKD7K.jpg "Skjermbilde av fungerende kode")
+
 ## Oppsett
 
 1. Koble skjermen til mikrokontrolleren. Eksemplet nedenfor viser hvordan det kobles til en Wemos D1 Mini.
