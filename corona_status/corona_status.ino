@@ -31,8 +31,9 @@ unsigned long timer_stats_update = 0;
 
 // Variables
 String scrolling_text = "";
-int confirmed = 0;
-int recovered = 0;
+int confirmedTotal = 0;
+int confirmedToday = 0;
+int confirmedDiff = 0;
 int dead = 0;
 
 int x;
@@ -118,7 +119,7 @@ void fetch_data() {
   HTTPClient https;
 
   Serial.print("[HTTPS] begin...\n");
-  if (https.begin(*client, "https://www.vg.no/spesial/2020/corona-viruset/data/norway-table-overview/?region=county")) {  // HTTPS
+  if (https.begin(*client, "https://redutv-api.vg.no/corona/v1/sheets/norway-table-overview/?region=county")) {  // HTTPS
 
     Serial.print("[HTTPS] GET...\n");
     // start connection and send HTTP header
@@ -134,7 +135,7 @@ void fetch_data() {
         String payload = https.getString();
         Serial.println("JSON data fetched");
 
-        const size_t capacity = JSON_ARRAY_SIZE(11) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 11*JSON_OBJECT_SIZE(6) + 2048;
+        const size_t capacity = JSON_ARRAY_SIZE(11) + 2*JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(5) + 11*JSON_OBJECT_SIZE(6) + 2048;
         DynamicJsonDocument doc(capacity);
 
         DeserializationError error = deserializeJson(doc, payload);
@@ -144,12 +145,22 @@ void fetch_data() {
           Serial.println(error.c_str());
           return;
         } else {
-          confirmed = doc["totals"]["confirmed"];
-          recovered = doc["totals"]["recovered"];
+          confirmedTotal = doc["totals"]["confirmed"];
+          confirmedToday = doc["totals"]["changes"]["newToday"];
+          confirmedDiff = doc["totals"]["changes"]["diff"];
           dead = doc["totals"]["dead"];
-          
-          Serial.print("Confirmed infected in Norway: ");
-          Serial.println(confirmed);
+
+          Serial.print("Total: ");
+          Serial.println(confirmedTotal);
+
+          Serial.print("New Today: ");
+          Serial.println(confirmedToday);
+
+          Serial.print("Diff Yesterday: ");
+          Serial.println(confirmedDiff);
+
+          Serial.print("Dead: ");
+          Serial.println(dead);
 
           JsonArray cases = doc["cases"];
           String scroll_space = "      ";
@@ -157,7 +168,7 @@ void fetch_data() {
           for (byte i = 0; i < sizeof(cases) - 1; i++) {
             int confirmedCases = cases[i]["confirmed"];
             const char* county = cases[i]["name"];
-            
+
             Serial.print(county);
             Serial.print(": ");
             Serial.println(confirmedCases);
@@ -165,7 +176,9 @@ void fetch_data() {
             scrolling_text += county;
             scrolling_text += ": ";
             scrolling_text += confirmedCases;
-            scrolling_text += scroll_space;
+
+            if (i < sizeof(cases))
+              scrolling_text += scroll_space;
           }
         }
       }
@@ -188,17 +201,15 @@ void show_stats() {
   
   OLED.setTextSize(2);
   OLED.setCursor(0, 16);
-  OLED.print(confirmed);
+  OLED.print(confirmedTotal);
 
   OLED.setTextSize(1);
-  OLED.setCursor(94, 16);
-  OLED.print("Rec: ");
-  OLED.setCursor(120, 16);
-  OLED.print(recovered);
+  OLED.setCursor(128-(6*7)-(6*String(confirmedToday).length()), 16);
+  OLED.print("Today: ");
+  OLED.print(confirmedToday);
 
-  OLED.setCursor(88, 24);
+  OLED.setCursor(128-(6*6)-(6*String(dead).length()), 24);
   OLED.print("Dead: ");
-  OLED.setCursor(120, 24);
   OLED.print(dead);
 }
 
